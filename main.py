@@ -1,21 +1,15 @@
-from flask import Flask
-from flask import render_template
-from flask import request
-import time
-import string
-import random
-import cv2
+from flask import Flask, render_template, request
+import time, string, random, cv2, os
 import numpy as np
 
+PEOPLE_FOLDER = os.path.join('static', 'uploads/')
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-@app.route('/upload/<name>')
-def hello(name=None):
-    return render_template('hello.html', name=name)
+@app.route('/')
+def hello():
+    return render_template('hello.html')
 
 @app.route('/upload/do', methods=['POST'])
 def upload_do():
@@ -27,9 +21,11 @@ def upload_do():
         filenameNoExt = ts +'.'+ therandom
         extension = '.jpg'
         filename = filenameNoExt+extension
-        f.save('uploads/'+filename)
+        full_filelocation = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        full_filelocation_origin = full_filelocation
+        f.save(full_filelocation)
 
-        image = cv2.imread('uploads/'+filename)
+        image = cv2.imread(full_filelocation)
 
         # convert to RGB
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -73,6 +69,6 @@ def upload_do():
         masked_image = masked_image.reshape(image.shape)
 
         filename = filenameNoExt+'_generated'+extension
-        cv2.imwrite('uploads/'+filename, masked_image)
-
-    return "<p>Hello, World!</p>"
+        full_filelocation = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        cv2.imwrite(full_filelocation,masked_image)
+    return render_template('result.html', img=full_filelocation, img_origin=full_filelocation_origin)
