@@ -72,3 +72,6 @@ def upload_do():
         full_filelocation = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         cv2.imwrite(full_filelocation,masked_image)
     return render_template('result.html', img=full_filelocation, img_origin=full_filelocation_origin)
+
+if __name__ == '__main__':
+    app.run(debug=True)
